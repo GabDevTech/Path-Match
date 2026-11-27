@@ -1,0 +1,31 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-pathmatch}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pathmatch_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-pathmatch}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pathmatch} -d ${POSTGRES_DB:-pathmatch}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: ${PORT:-3000}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-pathmatch}:${POSTGRES_PASSWORD:-pathmatch_secret}@db:5432/${POSTGRES_DB:-pathmatch}
+    ports:
+      - "${PORT:-3000}:3000"
+
+volumes:
+  pgdata:

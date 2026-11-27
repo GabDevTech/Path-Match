@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Memória em Grafo: ligue cartas por caminhos de menor custo em grafos.">
+  <title>Memória em Grafo</title>
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+  <main>
+    <section id="loading-view" class="card-panel center-panel">
+      <p class="subtitle">Carregando...</p>
+    </section>
+
+    <section id="auth-view" class="view is-hidden" aria-label="Autenticação">
+      <div class="topbar">
+        <div>
+          <h1>Memória em Grafo</h1>
+          <p class="subtitle">Entre para salvar suas partidas e acompanhar seu progresso.</p>
+        </div>
+        <button id="auth-theme-btn" type="button" class="btn-ghost" title="Alternar tema">Tema</button>
+      </div>
+
+      <div class="card-panel auth-card">
+        <div class="tabs" role="tablist">
+          <button id="tab-login" type="button" class="tab is-active" role="tab" aria-selected="true">Entrar</button>
+          <button id="tab-register" type="button" class="tab" role="tab" aria-selected="false">Criar conta</button>
+        </div>
+
+        <form id="auth-form" class="auth-form">
+          <label class="field">
+            <span>Usuário</span>
+            <input id="auth-username" type="text" autocomplete="username" minlength="3" maxlength="24" required placeholder="ex: jogador1">
+          </label>
+
+          <label class="field">
+            <span>Senha</span>
+            <input id="auth-password" type="password" autocomplete="current-password" minlength="4" maxlength="100" required placeholder="mínimo 4 caracteres">
+          </label>
+
+          <div id="avatar-field" class="field is-hidden">
+            <span>Avatar</span>
+            <div id="avatar-picker" class="avatar-picker" role="radiogroup" aria-label="Escolha um avatar">
+              <button type="button" class="avatar-btn is-selected" data-avatar="🧠">🧠</button>
+              <button type="button" class="avatar-btn" data-avatar="🦊">🦊</button>
+              <button type="button" class="avatar-btn" data-avatar="🚀">🚀</button>
+              <button type="button" class="avatar-btn" data-avatar="🎲">🎲</button>
+              <button type="button" class="avatar-btn" data-avatar="🐙">🐙</button>
+              <button type="button" class="avatar-btn" data-avatar="🔥">🔥</button>
+              <button type="button" class="avatar-btn" data-avatar="🐳">🐳</button>
+              <button type="button" class="avatar-btn" data-avatar="🎸">🎸</button>
+            </div>
+          </div>
+
+          <p id="auth-error" class="form-error" role="alert"></p>
+          <button id="auth-submit-btn" type="submit" class="btn-primary btn-block">Entrar</button>
+        </form>
+      </div>
+    </section>
+
+    <section id="home-view" class="view is-hidden" aria-label="Página inicial do jogador">
+      <header class="topbar">
+        <div>
+          <h1>Memória em Grafo</h1>
+          <p class="subtitle">Organize sua próxima partida e acompanhe seu desempenho.</p>
+        </div>
+        <div class="topbar-actions">
+          <span class="pill player-pill">
+            <span id="home-avatar">🧠</span>
+            <b id="home-username">jogador</b>
+          </span>
+          <button id="home-theme-btn" type="button" title="Alternar tema">Tema</button>
+          <button id="logout-btn" type="button">Sair</button>
+        </div>
+      </header>
+
+      <section class="stats-grid" aria-label="Estatísticas do jogador">
+        <div class="stat-card">
+          <span class="stat-label">Partidas</span>
+          <b id="stat-total" class="stat-value">0</b>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Recorde de grafos</span>
+          <b id="stat-best-graphs" class="stat-value">0</b>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Grafos completos</span>
+          <b id="stat-total-graphs" class="stat-value">0</b>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Total de pares</span>
+          <b id="stat-total-pairs" class="stat-value">0</b>
+        </div>
+      </section>
+
+      <section class="card-panel" aria-label="Configurar nova partida">
+        <h2 class="panel-title">Nova partida</h2>
+        <div class="setup-grid">
+          <label class="field">
+            <span>Dificuldade</span>
+            <select id="difficulty" aria-label="Dificuldade">
+              <option value="e">Fácil · 8 cartas</option>
+              <option value="m" selected>Médio · 12 cartas</option>
+              <option value="h">Difícil · 16 cartas</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Modo de custo</span>
+            <select id="cost-mode" aria-label="Modo de custo">
+              <option value="w">Pesos das arestas</option>
+              <option value="e">1 por aresta</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Tempo limite</span>
+            <select id="time-mode" aria-label="Limite de tempo">
+              <option value="120" selected>2 minutos · padrão (120s)</option>
+              <option value="0">Sem limite de tempo (sem ranking)</option>
+            </select>
+          </label>
+        </div>
+
+        <button id="start-match-btn" type="button" class="btn-primary btn-block">Jogar agora</button>
+      </section>
+
+      <section class="card-panel" aria-label="Ranking dos jogadores">
+        <div class="ranking-header">
+          <h2 class="panel-title">Ranking</h2>
+          <div id="ranking-type-tabs" class="subtabs" role="tablist" aria-label="Tipo de ranking">
+            <button type="button" class="subtab is-active" data-rank-type="best" role="tab" aria-selected="true">Melhor partida</button>
+            <button type="button" class="subtab" data-rank-type="average" role="tab" aria-selected="false">Média geral</button>
+          </div>
+        </div>
+
+        <div id="ranking-diff-tabs" class="subtabs subtabs-diff" role="tablist" aria-label="Dificuldade do ranking">
+          <button type="button" class="subtab" data-rank-diff="e" role="tab" aria-selected="false">Fácil</button>
+          <button type="button" class="subtab is-active" data-rank-diff="m" role="tab" aria-selected="true">Médio</button>
+          <button type="button" class="subtab" data-rank-diff="h" role="tab" aria-selected="false">Difícil</button>
+        </div>
+
+        <ol id="ranking-list" class="history-list ranking-list">
+          <li class="history-empty">Nenhuma partida ranqueada registrada nesta categoria ainda.</li>
+        </ol>
+      </section>
+
+      <section class="card-panel" aria-label="Histórico recente">
+        <h2 class="panel-title">Partidas recentes</h2>
+        <ul id="recent-matches-list" class="history-list">
+          <li class="history-empty">Nenhuma partida registrada ainda.</li>
+        </ul>
+      </section>
+
+      <details class="instructions">
+        <summary>Como jogar</summary>
+        <p>
+          1) Clique numa carta virada para baixo (origem).
+          2) Clique em cartas vizinhas, ligadas por uma aresta, para montar o caminho; clicar na penúltima carta desfaz o último passo.
+          3) Clique em “Conectar” (ou na última carta de novo): as duas pontas são reveladas.
+          Se forem iguais, o par fica aberto. Se não, elas voltam a ser escondidas, mas a energia já foi gasta.
+          Você pode passar por cartas já reveladas.
+          4) O jogo é infinito: ao completar todos os pares de um grafo, você mantém sua energia restante, ganha um bônus de energia, o cronômetro volta para 120s (no modo padrão) e um novo grafo é gerado até a energia ou o tempo acabar.
+          Dica para o trabalho: o caminho mais barato é um problema de caminho mínimo (Dijkstra).
+        </p>
+      </details>
+    </section>
+
+    <section id="game-view" class="view is-hidden" aria-label="Tabuleiro do jogo">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="back-home-btn" type="button">← Início</button>
+          <div>
+            <h1>Memória em Grafo</h1>
+            <p id="game-mode-summary" class="subtitle"></p>
+          </div>
+        </div>
+        <span class="pill player-pill">
+          <span id="game-avatar">🧠</span>
+          <b id="game-username">jogador</b>
+        </span>
+      </header>
+
+      <section class="hud" aria-label="Indicadores da partida">
+        <span class="pill">🧩 Grafos <b id="graphs-value">0</b></span>
+        <span class="pill">Pares <b id="pairs-value">0</b></span>
+        <span class="pill">⚡ Energia <b id="energy-value">0</b></span>
+        <div class="energy-bar" aria-hidden="true">
+          <i id="energy-fill"></i>
+        </div>
+        <span class="pill">⏱ <b id="timer-value">–</b></span>
+        <span class="pill">Caminho <b id="path-cost">0</b></span>
+      </section>
+
+      <section class="hud" aria-label="Controles do jogo">
+        <button id="confirm-btn" class="btn-primary" disabled>Conectar</button>
+        <button id="clear-btn" disabled>Limpar</button>
+        <button id="new-game-btn">Novo jogo</button>
+      </section>
+
+      <div id="status-message" class="status-message" role="status" aria-live="polite"></div>
+
+      <svg id="graph-board" viewBox="0 0 720 480" role="img" aria-label="Grafo de cartas"></svg>
+    </section>
+  </main>
+
+  <div class="modal-overlay" id="game-over-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-box">
+      <h2 id="modal-title"></h2>
+      <p id="modal-description"></p>
+      <div class="modal-actions">
+        <button id="play-again-btn" class="btn-primary">Jogar de novo</button>
+        <button id="modal-home-btn" type="button">Voltar ao início</button>
+      </div>
+    </div>
+  </div>
+
+  <script defer src="src/constants.js"></script>
+  <script defer src="src/graph.js"></script>
+  <script defer src="src/renderer.js"></script>
+  <script defer src="src/game.js"></script>
+  <script defer src="src/api.js"></script>
+  <script defer src="src/main.js"></script>
+</body>
+</html>
