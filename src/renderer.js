@@ -61,7 +61,7 @@
     }
 
     nodes.forEach((node, index) => {
-      const isFaceUp = node.matched || node.temp;
+      const isFaceUp = state.isPreviewing || node.matched || node.temp;
       const isSelected = path.includes(index);
       const cardX = node.x - halfWidth;
       const cardY = node.y - halfHeight;

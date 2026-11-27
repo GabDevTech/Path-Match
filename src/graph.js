@@ -32,7 +32,9 @@
    * @returns {number}
    */
   function getEdgeCost(edge, costMode) {
-    return costMode === COST_MODES.WEIGHTED ? edge.w : 1;
+    return costMode === COST_MODES.WEIGHTED
+      ? edge.w
+      : BOARD_CONFIG.FIXED_EDGE_COST;
   }
 
   /**
@@ -117,8 +119,18 @@
   }
 
   function randomEdgeWeight() {
-    const span = BOARD_CONFIG.MAX_EDGE_WEIGHT - BOARD_CONFIG.MIN_EDGE_WEIGHT + 1;
-    return BOARD_CONFIG.MIN_EDGE_WEIGHT + randomInt(span);
+    const roll = Math.random();
+    let cumulative = 0;
+    const distribution = BOARD_CONFIG.WEIGHTED_EDGE_DISTRIBUTION;
+
+    for (const entry of distribution) {
+      cumulative += entry.probability;
+      if (roll < cumulative) {
+        return entry.weight;
+      }
+    }
+
+    return distribution[distribution.length - 1].weight;
   }
 
   /**
