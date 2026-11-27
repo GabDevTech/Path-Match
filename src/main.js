@@ -131,12 +131,18 @@
     };
   }
 
+  function formatStatValue(value) {
+    return typeof value === "number" && Number.isFinite(value)
+      ? String(value)
+      : "Sem dados";
+  }
+
   function renderMatchHistory(data) {
-    const { stats, recent } = data;
-    ui.statTotal.textContent = String(stats.totalGames);
-    ui.statBestGraphs.textContent = String(stats.bestGraphs);
-    ui.statTotalGraphs.textContent = String(stats.totalGraphs);
-    ui.statTotalPairs.textContent = String(stats.totalPairs);
+    const { stats = {}, recent = [] } = data || {};
+    ui.statTotal.textContent = formatStatValue(stats.totalGames);
+    ui.statBestGraphs.textContent = formatStatValue(stats.bestGraphs);
+    ui.statTotalGraphs.textContent = formatStatValue(stats.totalGraphs);
+    ui.statTotalPairs.textContent = formatStatValue(stats.totalPairs);
 
     if (!recent || recent.length === 0) {
       ui.recentMatchesList.innerHTML =
@@ -146,14 +152,18 @@
 
     ui.recentMatchesList.innerHTML = recent
       .map((match) => {
-        const badgeClass =
-          match.graphsCompleted > 0 ? "badge-win" : "badge-neutral";
-        const graphsLabel =
-          match.graphsCompleted === 1
-            ? "1 grafo"
-            : `${match.graphsCompleted} grafos`;
-        const pairsLabel =
-          match.pairsMatched === 1 ? "1 par" : `${match.pairsMatched} pares`;
+        const graphs = Number.isFinite(match.graphsCompleted)
+          ? match.graphsCompleted
+          : 0;
+        const pairs = Number.isFinite(match.pairsMatched)
+          ? match.pairsMatched
+          : 0;
+        const duration = Number.isFinite(match.durationSeconds)
+          ? match.durationSeconds
+          : 0;
+        const badgeClass = graphs > 0 ? "badge-win" : "badge-neutral";
+        const graphsLabel = graphs === 1 ? "1 grafo" : `${graphs} grafos`;
+        const pairsLabel = pairs === 1 ? "1 par" : `${pairs} pares`;
         const diffLabel = DIFFICULTY_LABELS[match.difficulty] || match.difficulty;
         const costLabel = COST_LABELS[match.costMode] || match.costMode;
         const dateLabel = new Date(match.playedAt).toLocaleString("pt-BR", {
@@ -173,7 +183,7 @@
               <span class="badge ${badgeClass}">${graphsLabel}</span>
               <strong>${diffLabel}</strong> · ${costLabel} · ${pairsLabel}${modeTag}
             </span>
-            <span>⏱ ${match.durationSeconds}s · ${dateLabel}</span>
+            <span>⏱ ${duration}s · ${dateLabel}</span>
           </li>
         `;
       })
@@ -190,15 +200,19 @@
     ui.rankingList.innerHTML = entries
       .map((entry) => {
         const isMe = currentUser && entry.userId === currentUser.id;
-        const graphsLabel =
-          entry.graphsCompleted === 1
-            ? "1 grafo"
-            : `${entry.graphsCompleted} grafos`;
-        const pairsLabel =
-          entry.pairsMatched === 1 ? "1 par" : `${entry.pairsMatched} pares`;
+        const graphs = Number.isFinite(entry.graphsCompleted)
+          ? entry.graphsCompleted
+          : 0;
+        const pairs = Number.isFinite(entry.pairsMatched)
+          ? entry.pairsMatched
+          : 0;
+        const time = Number.isFinite(entry.timeSeconds) ? entry.timeSeconds : 0;
+        const matches = Number.isFinite(entry.matches) ? entry.matches : 0;
+        const graphsLabel = graphs === 1 ? "1 grafo" : `${graphs} grafos`;
+        const pairsLabel = pairs === 1 ? "1 par" : `${pairs} pares`;
         const suffix =
           rankingType === "average"
-            ? ` · ${entry.matches} ${entry.matches === 1 ? "partida" : "partidas"}`
+            ? ` · ${matches} ${matches === 1 ? "partida" : "partidas"}`
             : "";
         return `
           <li class="history-item ranking-item${isMe ? " is-me" : ""}">
@@ -208,7 +222,7 @@
             </span>
             <span>
               <span class="rank-score">${graphsLabel}</span>
-              · ${pairsLabel} · ⏱ ${entry.timeSeconds}s${suffix}
+              · ${pairsLabel} · ⏱ ${time}s${suffix}
             </span>
           </li>
         `;
