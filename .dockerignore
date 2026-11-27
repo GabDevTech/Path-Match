@@ -1,0 +1,5 @@
+node_modules
+.git
+.env
+Memória em Grafo (2).html
+*.log
