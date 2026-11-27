@@ -140,20 +140,24 @@
       }
 
       const lastIndex = this.path[this.path.length - 1];
-      const existingIndex = this.path.indexOf(nodeIndex);
 
-      if (existingIndex === this.path.length - 1) {
-        this.path.pop();
-        if (this.path.length === 0) {
-          this.onMessage("Escolha uma carta de origem.");
+      if (nodeIndex === lastIndex) {
+        if (this.path.length > 1) {
+          this.confirmPath();
         }
+        return;
+      }
+
+      if (
+        this.path.length > 1 &&
+        nodeIndex === this.path[this.path.length - 2]
+      ) {
+        this.path.pop();
         this.notifyStateChange();
         return;
       }
 
-      if (existingIndex !== -1) {
-        this.path = this.path.slice(0, existingIndex + 1);
-        this.notifyStateChange();
+      if (this.path.includes(nodeIndex)) {
         return;
       }
 

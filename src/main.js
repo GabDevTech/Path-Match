@@ -56,6 +56,7 @@
     difficulty: document.getElementById("difficulty"),
     confirmBtn: document.getElementById("confirm-btn"),
     clearBtn: document.getElementById("clear-btn"),
+    newGameBtn: document.getElementById("new-game-btn"),
     statusMessage: document.getElementById("status-message"),
     graphBoard: document.getElementById("graph-board"),
     modalOverlay: document.getElementById("game-over-modal"),
@@ -428,6 +429,7 @@
 
   ui.confirmBtn.addEventListener("click", () => game.confirmPath());
   ui.clearBtn.addEventListener("click", () => game.clearPath());
+  ui.newGameBtn.addEventListener("click", () => game.startNewGame());
   ui.playAgainBtn.addEventListener("click", () => game.startNewGame());
 
   async function bootstrap() {
