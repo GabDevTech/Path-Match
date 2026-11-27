@@ -109,8 +109,8 @@
           <label class="field">
             <span>Modo de custo</span>
             <select id="cost-mode" aria-label="Modo de custo">
-              <option value="w">Pesos das arestas</option>
-              <option value="e">1 por aresta</option>
+              <option value="w" selected>Arestas Ponderadas (2, 3 ou 4)</option>
+              <option value="e">Arestas Fixas · 2 por aresta (sem ranking)</option>
             </select>
           </label>
 
@@ -155,15 +155,13 @@
 
       <details class="instructions">
         <summary>Como jogar</summary>
-        <p>
-          1) Clique numa carta virada para baixo (origem).
-          2) Clique em cartas vizinhas, ligadas por uma aresta, para montar o caminho; clicar na penúltima carta desfaz o último passo.
-          3) Clique em “Conectar” (ou na última carta de novo): as duas pontas são reveladas.
-          Se forem iguais, o par fica aberto. Se não, elas voltam a ser escondidas, mas a energia já foi gasta.
-          Você pode passar por cartas já reveladas.
-          4) O jogo é infinito: ao completar todos os pares de um grafo, você mantém sua energia restante, ganha um bônus de energia, o cronômetro volta para 120s (no modo padrão) e um novo grafo é gerado até a energia ou o tempo acabar.
-          Dica para o trabalho: o caminho mais barato é um problema de caminho mínimo (Dijkstra).
-        </p>
+        <ol class="instructions-list">
+          <li>No início de cada grafo, todas as cartas ficam viradas para cima por 3 segundos para memorização e depois viram para baixo nas mesmas posições.</li>
+          <li>Clique numa carta virada para baixo (origem) e clique em cartas vizinhas, ligadas por uma aresta, para montar o caminho; clicar na penúltima carta desfaz o último passo.</li>
+          <li>Clique em “Conectar” (ou na última carta de novo): as duas pontas são reveladas. Se forem iguais, o par fica aberto e você não gasta energia. Se não forem, elas voltam a ser escondidas e o custo do caminho é descontado da energia. Você pode passar por cartas já reveladas.</li>
+          <li>O jogo é infinito: ao completar todos os pares de um grafo, você mantém sua energia restante, ganha um bônus de energia, o cronômetro volta para 120s (no modo padrão) e um novo grafo é gerado até a energia ou o tempo acabar.</li>
+        </ol>
+        <p class="instructions-tip"><strong>Dica para o trabalho:</strong> o caminho mais barato é um problema de caminho mínimo (Dijkstra).</p>
       </details>
     </section>
 

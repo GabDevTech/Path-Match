@@ -2,7 +2,7 @@
   const { BOARD_CONFIG, GameController, renderer, api } = window.PathMatch;
 
   const DIFFICULTY_LABELS = { e: "Fácil", m: "Médio", h: "Difícil" };
-  const COST_LABELS = { w: "Pesos", e: "1 por aresta" };
+  const COST_LABELS = { w: "Arestas Ponderadas", e: "Arestas Fixas" };
   const THEME_CYCLE = ["auto", "light", "dark"];
   const THEME_LABELS = {
     auto: "Tema: Auto",
@@ -163,8 +163,9 @@
           minute: "2-digit",
         });
 
-        const modeTag =
-          match.timeLimitSeconds === 0 ? " · Sem ranking" : "";
+        const isUnranked =
+          match.timeLimitSeconds === 0 || match.costMode === "e";
+        const modeTag = isUnranked ? " · Sem ranking" : "";
 
         return `
           <li class="history-item">
@@ -264,10 +265,11 @@
     },
     async onGameOver(result) {
       const settings = getSettings();
-      const modalDescription =
-        settings.timeLimitSeconds === 0
-          ? `${result.description} Modo sem limite de tempo não conta para o ranking.`
-          : result.description;
+      const isUnranked =
+        settings.timeLimitSeconds === 0 || settings.costMode === "e";
+      const modalDescription = isUnranked
+        ? `${result.description} Este modo não conta para o ranking.`
+        : result.description;
 
       renderer.showGameOverModal(ui, { description: modalDescription });
       if (!currentUser) {
@@ -297,7 +299,10 @@
   function startMatchFromHome() {
     const { difficultyKey, costMode, timeLimitSeconds } = getSettings();
     const diffLabel = DIFFICULTY_LABELS[difficultyKey] || difficultyKey;
-    const costLabel = COST_LABELS[costMode] || costMode;
+    const costLabel =
+      costMode === "e"
+        ? "Arestas Fixas (sem ranking)"
+        : COST_LABELS[costMode] || costMode;
     const timeLabel =
       timeLimitSeconds === 0
         ? "Sem limite de tempo (sem ranking)"
