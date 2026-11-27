@@ -38,6 +38,8 @@
       this.timerId = null;
       this.transitionTimeoutId = null;
       this.mismatchTimeoutId = null;
+      this.previewTimeoutId = null;
+      this.isPreviewing = false;
       this.isGameOver = false;
       this.isLocked = false;
     }
@@ -53,6 +55,7 @@
         graphsCompleted: this.graphsCompleted,
         pairsMatched: this.pairsMatched,
         timeRemaining: this.timeRemaining,
+        isPreviewing: this.isPreviewing,
         isGameOver: this.isGameOver,
         isLocked: this.isLocked,
       };
@@ -64,6 +67,7 @@
 
       this.isGameOver = false;
       this.isLocked = false;
+      this.isPreviewing = false;
       this.path = [];
       this.graphsCompleted = 0;
       this.pairsMatched = 0;
@@ -80,7 +84,6 @@
       this.startedAt = Date.now();
 
       this.loadNextGraph(difficulty, timeLimitSeconds);
-      this.onMessage("Escolha uma carta de origem.");
       this.notifyStateChange();
     }
 
@@ -90,13 +93,31 @@
       this.edges = graph.edges;
       this.viewBoxHeight = graph.viewBoxHeight;
       this.path = [];
-      this.isLocked = false;
 
       this.stopTimer();
       this.timeRemaining = timeLimitSeconds;
-      if (this.timeRemaining > 0) {
-        this.timerId = setInterval(() => this.tickTimer(), 1000);
-      }
+      this.isPreviewing = true;
+      this.isLocked = true;
+
+      const graphNumber = this.graphsCompleted + 1;
+      const previewSeconds = Math.round(BOARD_CONFIG.PREVIEW_DURATION_MS / 1000);
+      this.onMessage(
+        `Grafo #${graphNumber}: memorize as cartas! (${previewSeconds}s)`
+      );
+
+      this.previewTimeoutId = setTimeout(() => {
+        this.previewTimeoutId = null;
+        if (this.isGameOver) {
+          return;
+        }
+        this.isPreviewing = false;
+        this.isLocked = false;
+        if (this.timeRemaining > 0) {
+          this.timerId = setInterval(() => this.tickTimer(), 1000);
+        }
+        this.onMessage("Escolha uma carta de origem.");
+        this.notifyStateChange();
+      }, BOARD_CONFIG.PREVIEW_DURATION_MS);
     }
 
     handleNodeClick(nodeIndex) {
@@ -170,12 +191,15 @@
       const { costMode } = this.getSettings();
       const cost = calculatePathCost(this.path, this.edges, costMode);
 
-      this.energy = Math.max(0, this.energy - cost);
       this.path = [];
 
       const startNode = this.nodes[startIndex];
       const endNode = this.nodes[endIndex];
       const isMatch = startNode.sym === endNode.sym;
+
+      if (!isMatch) {
+        this.energy = Math.max(0, this.energy - cost);
+      }
 
       startNode.temp = true;
       endNode.temp = true;
@@ -186,7 +210,10 @@
         startNode.temp = false;
         endNode.temp = false;
         this.pairsMatched += 1;
-        this.onMessage(`Par encontrado! ${startNode.sym}`, "var(--success)");
+        this.onMessage(
+          `Par encontrado! ${startNode.sym} (sem gasto de energia)`,
+          "var(--success)"
+        );
       } else {
         this.onMessage("Não combinam. Memorize!", "var(--danger)");
         this.isLocked = true;
@@ -234,9 +261,6 @@
           return;
         }
         this.loadNextGraph(difficulty, timeLimitSeconds);
-        this.onMessage(
-          `Grafo #${this.graphsCompleted + 1} pronto. Escolha uma carta de origem.`
-        );
         this.notifyStateChange();
       }, BOARD_CONFIG.NEXT_GRAPH_DELAY_MS);
     }
@@ -295,6 +319,10 @@
       if (this.mismatchTimeoutId !== null) {
         clearTimeout(this.mismatchTimeoutId);
         this.mismatchTimeoutId = null;
+      }
+      if (this.previewTimeoutId !== null) {
+        clearTimeout(this.previewTimeoutId);
+        this.previewTimeoutId = null;
       }
     }
 

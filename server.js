@@ -480,7 +480,7 @@ app.get("/api/rankings", requireAuth, async (req, res, next) => {
                   COUNT(*)::int AS matches
            FROM matches m
            JOIN users u ON u.id = m.user_id
-           WHERE m.difficulty = $1 AND m.time_limit_seconds > 0
+           WHERE m.difficulty = $1 AND m.time_limit_seconds > 0 AND m.cost_mode = 'w'
            GROUP BY u.id
            ORDER BY AVG(m.graphs_completed) DESC, AVG(m.pairs_matched) DESC, AVG(m.duration_seconds) ASC
            LIMIT 20`
@@ -495,7 +495,7 @@ app.get("/api/rankings", requireAuth, async (req, res, next) => {
                       ORDER BY m.graphs_completed DESC, m.pairs_matched DESC, m.duration_seconds ASC
                     ) AS rn
              FROM matches m
-             WHERE m.difficulty = $1 AND m.time_limit_seconds > 0
+             WHERE m.difficulty = $1 AND m.time_limit_seconds > 0 AND m.cost_mode = 'w'
            )
            SELECT u.id, u.username, u.avatar,
                   r.graphs_completed::int AS graphs_completed,
